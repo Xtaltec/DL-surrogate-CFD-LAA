@@ -155,7 +155,7 @@ StressDataFile='ECAP_Final.mat'
 
 
 TempDataFile='TempData.mat'
-ResultFile='DL_ECAP_result.mat'
+ResultFile='DL_ECAP_SFC_CrossValidation.mat'
 
 #Load Shape data
 MatData_shape=sio.loadmat(ShapeDataFile)

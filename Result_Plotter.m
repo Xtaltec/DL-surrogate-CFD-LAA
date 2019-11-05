@@ -1,42 +1,19 @@
-%% Plot the ECAP of result
-clear all
+%% Plot the ECAP of result %%
 
-load('DL_ECAP_result.mat')
-load('Shape_Final.mat')
-load('ECAP_Final.mat')
+load('DL_ECAP_result.mat') %% Load ECAP prediction file for single training
+load('Shape_Final.mat') %% Load Shape Ground Truth
+load('ECAP_Final.mat') %% Load ECAP Ground Truth
 
-id=IndexList_test+1;
+id=IndexList_test+1; %% Sum 1 to indexlist so that it works properly in MATLAB
 
-[nNod,nSim]=size(StressData);
+[nNod,nSim]=size(StressData); %% [Number of nodes, Number of instances]
 
-vShapeData=zeros(nNod,3,nSim);
+vShapeData=zeros(nNod,3,nSim); %% 3D array with the x,y,z coordinates separated in 3 columns
 vShapeData(:,1,:)=ShapeData(1:3:(nNod*3),:);
 vShapeData(:,2,:)=ShapeData(2:3:(nNod*3),:);
 vShapeData(:,3,:)=ShapeData(3:3:(nNod*3),:);
 
-%% Reconstruction
-nNod=size(Sp,1);
-PC_count2=length(EValues);
-
-StressReconstruction=zeros(nNod,length(IndexList_test));
-for k=1:length(IndexList_test)
-    q=zeros(nNod,1);
-    for n=1:PC_count2
-      temp=Yp(k,n)*EValues(n)*EVectors(:,n);
-       for ii=1:nNod
-           q(ii)=q(ii)+temp(ii);
-       end
-    end
-   temp=q+MeanStress;
-   StressReconstruction(:,k)=temp;
-end
-
-%%% Error
-
-Error_multi=mean(mean(abs(S_t-StressReconstruction)));
-Error_neural=mean(mean(abs(S_t-Sp)));
-
-%% PLOTTING
+%% PLOTTING - Ground Truth
 close all
 
 for i=1:length(IndexList_test)
@@ -71,30 +48,6 @@ caxis([0, 6])
 
 end
 
-% %% Plot Difference
-% 
-% d=6;
-% 
-% for i=1:length(IndexList_test)
-% 
-% y=id(i);
-% figure()
-% subplot(1,2,1)
-% %%% Multi
-% Dif=Sp(:,i)-StressData(:,y);
-% rgb_Dif_M=vals2colormap(Dif,'jet',[0,d]);
-% scatter3(vShapeData(:,1,y),vShapeData(:,2,y),vShapeData(:,3,y),30,rgb_Dif_M,'filled','MarkerEdgeColor','k')
-% title('Matrix dif')
-% 
-% subplot(1,2,2)
-% %%% Neural
-% Dif=Sp(:,i)-StressData(:,y);
-% rgb_Dif_N=vals2colormap(Dif,'jet',[0,d]);
-% scatter3(vShapeData(:,1,y),vShapeData(:,2,y),vShapeData(:,3,y),30,rgb_Dif_N,'filled','MarkerEdgeColor','k')
-% title('Neural Dif')
-% 
-% end
-
 %% Wrong ECAP:8,9,21,23,41,43,44,45,78,101,130,155
 %% Left but better check: 26,163,178
 %%
@@ -105,29 +58,8 @@ end
 %      title(num2str(i))
 %  end
 
-%% 
-dif=zeros(size(Sp,2));
+%% Node and average difference per ECAP value
 
-
-for i=1:size(Sp,2)
-    dif(:,i)=mean(abs(S_t-Sp(:,i)),1);
-    
-end
-
-difMin=zeros(size(Sp,2),5);
-
-for i=1:size(Sp,2)
-    difMin(i,1)=find(dif(:,i)==min(dif(:,i)));
-    difMin(i,2)=min(dif(:,i));
-    difMin(i,3)=dif(i,i);
-    difMin(i,4)=mean(dif(:,i));
-end
-
-difMin(:,5)=abs(difMin(:,2)-difMin(:,3));
-
-best=mean(difMin(:,5));
-
-%%
 v1_t=length(find(S_t<=1));
 v2_t=length(find(S_t<=2))-v1_t;
 v3_t=length(find(S_t<=3))-v2_t-v1_t;
@@ -152,9 +84,11 @@ dif_v5=abs(v5_t-v5_p)/v5_t;
 dif_v6=abs(v6_t-v6_p)/v6_t;
 dif_vm=abs(vm_t-vm_p)/vm_t;
 
-%% Threshold
+%% Threshold for high ECAP values
 
-T=5;
+%%% A threshold is chosen above which the nodes are considered to have high
+%%% risk of thrombus formation
+T=4;
 
 bDif=zeros(1,length(IndexList_test));
 sDif=zeros(1,length(IndexList_test));
@@ -179,6 +113,6 @@ for i=1:length(IndexList_test)
 end
 
 
-nBig_D=abs((nBig-nBig_P))./nBig;
-Predicted_risk=1-nBig_D;
-Predicted_risk_mean=mean(Predicted_risk); %%Percentage of the nodes detected at risk ta is also predicted
+nBig_D=abs((nBig-nBig_P))./nBig; %% Normalized difference of nodes at risk
+Predicted_risk=1-nBig_D; %% Percentage of nodes predicted in risk
+Predicted_risk_mean=mean(Predicted_risk); %%Percentage of the nodes detected at risk is also predicted

@@ -187,7 +187,7 @@ StressDataFile='ECAP_Final.mat' # Rows correspond to the ECAP values for each no
 
 
 TempDataFile='TempData.mat' # File where all the MATLAB unsupervised learning data is going to be stored
-ResultFile='Mean_and_Std_LR_0.001Drop_0.7.mat' # Name of the file with the results of the DL analysis
+ResultFile='DL_ECAP_PCA_CrossValidation.mat' # Name of the file with the results of the DL analysis
 
 ## Load Shape data
 MatData_shape=sio.loadmat(ShapeDataFile) 
